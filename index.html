@@ -27,7 +27,6 @@
       font-size: 2.5rem;
       font-weight: bold;
     }
-    /* شاشة التلفزيون */
     .tv-screen {
       background: #000;
       border: 12px solid #333;
@@ -73,7 +72,6 @@
       font-size: 1rem;
     }
 
-    /* أنيميشن */
     @keyframes pulse {
       0% { transform: scale(1); }
       50% { transform: scale(1.1); }
@@ -116,6 +114,9 @@
     تصميم: مهندس بولس سمير
   </footer>
 
+  <!-- صوت الجرس -->
+  <audio id="bellSound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
+
   <script>
     // === Firebase Config ===
     const firebaseConfig = {
@@ -130,16 +131,17 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // === تحديث الرقم الحالي تلقائياً ===
     const currentEl = document.getElementById("currentNumber");
+    const btn = document.getElementById("getNumber");
+    const myNum = document.getElementById("myNumber");
+    const bellSound = document.getElementById("bellSound");
+
+    // تحديث الرقم الحالي
     db.ref("queue/currentNumber").on("value", snap => {
       currentEl.innerText = snap.val() || 0;
     });
 
-    // === الحصول على رقم جديد مع إخفاء بعد 10 ثواني ===
-    const btn = document.getElementById("getNumber");
-    const myNum = document.getElementById("myNumber");
-
+    // الحصول على رقم جديد
     btn.addEventListener("click", () => {
       db.ref("queue/lastNumber").transaction(current => (current || 0) + 1,
         (error, committed, snapshot) => {
@@ -147,6 +149,15 @@
             const number = snapshot.val();
             myNum.innerText = "✅ رقمك: " + number;
             myNum.style.opacity = 1;
+
+            // تشغيل جرس
+            bellSound.currentTime = 0;
+            bellSound.play();
+
+            // رسالة صوتية
+            const msg = new SpeechSynthesisUtterance("العميل رقم " + number + " التوجه لشئون الطلاب لتسليم الملف");
+            msg.lang = "ar-SA"; // عربي
+            speechSynthesis.speak(msg);
 
             // إخفاء بعد 10 ثواني
             setTimeout(() => {
