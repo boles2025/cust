@@ -47,9 +47,10 @@
 
   <footer>تصميم مهندس بولس سمير</footer>
 
+  <!-- Firebase config -->
   <script src="js/firebase.js"></script>
   <script>
-    // قراءة رقمك من ?my=123
+    // قراءة رقمك من الرابط ?my=123
     function getMyNumber(){
       const p = new URLSearchParams(location.search);
       const v = Number(p.get('my'));
@@ -64,11 +65,10 @@
 
     let currentVal = 0;
 
-    // الاستماع للرقم الجاري (نفس المسار الأصلي) :contentReference[oaicite:3]{index=3}
+    // الرقم الجاري
     db.ref('queue/currentNumber').on('value', snap => {
       currentVal = Number(snap.val() || 0);
       currentEl.textContent = currentVal;
-
       if (my == null) remainingEl.textContent = '—';
       else remainingEl.textContent = Math.max(0, my - currentVal);
     });
@@ -82,9 +82,15 @@
 
       annList.innerHTML = '';
       if (items.length === 0) {
-        const li = document.createElement('li'); li.textContent = 'لا توجد إعلانات حالياً'; annList.appendChild(li);
+        const li = document.createElement('li');
+        li.textContent = 'لا توجد إعلانات حالياً';
+        annList.appendChild(li);
       } else {
-        items.forEach(t => { const li = document.createElement('li'); li.textContent = t; annList.appendChild(li); });
+        items.forEach(t => {
+          const li = document.createElement('li');
+          li.textContent = t;
+          annList.appendChild(li);
+        });
       }
     });
   </script>
