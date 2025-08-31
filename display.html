@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="utf-8" />
+  <title>شاشة العرض - كلية الطب البيطري</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <style>
+    body {
+      background: linear-gradient(to bottom right, #004d40, #00695c);
+      color: #fff;
+      text-align: center;
+      font-family: "Tajawal", sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    header {
+      padding: 20px;
+    }
+    header h1 {
+      font-size: 2.5rem;
+      font-weight: bold;
+    }
+    #displayNumber {
+      font-size: 200px;
+      font-weight: bold;
+      color: #ffeb3b;
+      text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+    }
+    footer {
+      background: rgba(0,0,0,0.4);
+      padding: 15px;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>كلية الطب البيطري - جامعة المنيا</h1>
+    <h4>نظام خدمة العملاء</h4>
+  </header>
+
+  <main>
+    <div>الرقم الحالي</div>
+    <div id="displayNumber">0</div>
+  </main>
+
+  <footer>
+    تصميم: مهندس بولس سمير
+  </footer>
+
+  <script src="js/firebase.js"></script>
+  <script>
+    const displayEl = document.getElementById('displayNumber');
+    db.ref('queue/currentNumber').on('value', snap => {
+      displayEl.innerText = snap.val() || 0;
+    });
+  </script>
+</body>
+</html>

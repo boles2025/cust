@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="utf-8" />
+  <title>لوحة التحكم - كلية الطب البيطري</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <style>
+    body {
+      background: #f5f5f5;
+      font-family: "Tajawal", sans-serif;
+      text-align: center;
+      padding: 40px;
+    }
+    #currentNumber {
+      font-size: 4rem;
+      color: #d32f2f;
+    }
+    footer {
+      margin-top: 30px;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <h2>لوحة إدارة الطابور - كلية الطب البيطري</h2>
+  <div class="my-4">
+    <h4>الرقم الحالي:</h4>
+    <div id="currentNumber">0</div>
+  </div>
+  <button id="nextBtn" class="btn btn-success btn-lg">التالي ▶</button>
+  <button id="resetBtn" class="btn btn-danger btn-lg ms-2">إعادة تعيين 🔄</button>
+
+  <footer>تصميم: مهندس بولس سمير</footer>
+
+  <script src="js/firebase.js"></script>
+  <script>
+    const curNum = document.getElementById("currentNumber");
+    const nextBtn = document.getElementById("nextBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    db.ref("queue/currentNumber").on("value", snap => {
+      curNum.innerText = snap.val() || 0;
+    });
+
+    nextBtn.addEventListener("click", () => {
+      db.ref("queue/currentNumber").transaction(n => (n || 0) + 1);
+    });
+
+    resetBtn.addEventListener("click", () => {
+      db.ref("queue").set({ currentNumber: 0, lastNumber: 0 });
+    });
+  </script>
+</body>
+</html>
