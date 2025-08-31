@@ -3,95 +3,216 @@
 <head>
   <meta charset="utf-8" />
   <title>تتبُّع الدور - كلية الطب البيطري</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Firebase v8 -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
   <style>
-    :root{ --c1:#004d40; --c2:#009688; }
-    body{ margin:0; min-height:100vh; color:#fff; font-family:"Tajawal", system-ui, Segoe UI, Roboto, Arial, sans-serif;
-      background: linear-gradient(160deg, var(--c1), var(--c2)); display:flex; flex-direction:column; }
-    .wrap{ padding:16px; max-width:760px; margin:0 auto; flex:1 0 auto; width:100% }
-    .cardx{ background: rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.18);
-      border-radius:16px; padding:16px; margin-bottom:14px; backdrop-filter: blur(6px); box-shadow: 0 10px 30px rgba(0,0,0,.25); }
-    .big-num{ font-size: clamp(54px, 16vw, 120px); line-height: .9; font-weight: 900; text-align: center;
-      letter-spacing: -1px; margin: 4px 0 10px; background: linear-gradient(45deg,#fff,#ffeb3b,#fff,#00e5ff,#fff);
-      -webkit-background-clip:text; background-clip:text; color:transparent; text-shadow: 0 0 20px rgba(0,0,0,.25); }
-    .muted{ opacity:.85 } ul{ margin:0; padding-inline-start: 1.1rem; }
-    footer{ text-align:center; color:#e8e8e8; opacity:.9; padding:12px; flex:0 0 auto }
-    .pill{ background:#fff; color:#114; border-radius:999px; padding:6px 12px; display:inline-flex; align-items:center; gap:8px; }
+    :root{
+      --bg1:#004d40; --bg2:#009688;
+      --accent1:#ffeb3b; --accent2:#00e5ff; --accent3:#ff4081;
+      --glass: rgba(255,255,255,.10);
+    }
+
+    /* خلفية متدرجة متحركة */
+    @keyframes bg-shift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+    body{
+      margin:0; min-height:100vh; color:#fff; font-family:"Tajawal",system-ui,Segoe UI,Roboto,Arial,sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2), #00695c);
+      background-size: 200% 200%;
+      animation: bg-shift 18s ease-in-out infinite;
+      display:flex; flex-direction:column;
+    }
+
+    .wrap{ padding:16px; max-width:900px; margin:0 auto; width:100%; flex:1 0 auto; }
+
+    /* بطاقة زجاجية لطيفة */
+    .cardx{
+      background: rgba(0,0,0,.35);
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:18px;
+      padding:16px;
+      margin-bottom:14px;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+
+    /* خانة رقم الطالب (بيضاوية) */
+    .pill{
+      display:inline-flex; align-items:center; gap:10px;
+      padding:10px 18px;
+      border-radius:999px;
+      background: linear-gradient(90deg, #ffffff, #fff9c4, #ffffff);
+      color:#0b3d3a;
+      font-weight:900;
+      box-shadow: 0 10px 24px rgba(0,0,0,.20), inset 0 -3px 0 rgba(0,0,0,.08);
+      position: relative; overflow: hidden;
+    }
+    /* لمعان يجري */
+    .pill::after{
+      content:"";
+      position:absolute; top:0; bottom:0; width:60px; left:-60px;
+      background:linear-gradient(100deg, rgba(255,255,255,0), rgba(255,255,255,.65), rgba(255,255,255,0));
+      transform: skewX(-20deg);
+      animation: shine 2.8s linear infinite;
+    }
+    @keyframes shine { 0%{ left:-70px } 100%{ left:110% } }
+
+    .pill .label{ opacity:.7; font-weight:700; }
+    .pill .value{
+      font-size: clamp(22px, 3.8vw, 32px);
+      line-height:1;
+    }
+
+    /* الأرقام الكبيرة */
+    .big-num{
+      font-size: clamp(60px, 14vw, 140px);
+      line-height:.9; font-weight:900; text-align:center; letter-spacing:-1px; margin:6px 0 8px;
+      background: conic-gradient(from var(--angle), #fff, var(--accent1), #fff, var(--accent2), #fff, var(--accent3), #fff);
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+      --angle:0deg; animation: hueRotate 10s linear infinite;
+      text-shadow: 0 0 20px rgba(0,0,0,.25);
+    }
+    @keyframes hueRotate { 0%{ filter:hue-rotate(0deg); --angle:0deg } 100%{ filter:hue-rotate(360deg); --angle:360deg } }
+
+    .title-muted{ opacity:.85; font-weight:700; text-align:center; }
+
+    /* مربع متبقي */
+    .remain-num{
+      font-size: clamp(34px, 9vw, 72px); font-weight:900; text-align:center; margin:2px 0 0;
+      color:#fff; text-shadow: 0 0 14px rgba(0,0,0,.25);
+    }
+
+    /* شريط إعلانات متحرّك */
+    .ticker-wrap{
+      width: 100%;
+      background: rgba(0,0,0,0.45);
+      border-top: 1px solid rgba(255,255,255,0.12);
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      overflow: hidden; white-space: nowrap;
+    }
+    .ticker{
+      display: inline-block;
+      padding-block: 10px;
+      will-change: transform;
+      animation: ticker 28s linear infinite;
+    }
+    .ticker:hover{ animation-play-state: paused; }
+    .ticker-item{
+      display:inline-block; margin-inline:26px; font-size: clamp(14px,1.6vw,18px);
+      color:#ffeb3b; text-shadow: 0 0 8px rgba(255,235,59,.35);
+    }
+    @keyframes ticker { from{ transform: translateX(100%) } to{ transform: translateX(-100%) } }
+
+    /* تذييل */
+    footer{
+      text-align:center; color:#e8e8e8; opacity:.95; padding:12px; flex:0 0 auto;
+      font-weight:700;
+    }
+
+    /* bump عند التحدّث */
+    .bump{ animation: bump 260ms ease; }
+    @keyframes bump{ 0%{ transform:scale(1); opacity:1 } 30%{ transform:scale(1.06); opacity:.92 } 100%{ transform:scale(1); opacity:1 } }
   </style>
 </head>
 <body>
+
   <div class="wrap">
-    <div class="cardx d-flex align-items-center justify-content-between">
-      <div class="muted">تتبُّع الدور — كلية الطب البيطري</div>
-      <span class="pill"><b id="myNum">—</b><small>رقمي</small></span>
+    <!-- سطر علوي: خانة رقم الطالب البيضاوية -->
+    <div class="cardx d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div class="title-muted">تتبُّع الدور — كلية الطب البيطري</div>
+      <div class="pill">
+        <span class="label">رقمي</span>
+        <span id="myNum" class="value">—</span>
+      </div>
     </div>
 
+    <!-- مربع الرقم الجاري -->
     <div class="cardx text-center">
-      <div class="muted mb-1">الرقم الجاري خدمته الآن</div>
+      <div class="title-muted mb-1">الرقم الجاري خدمته الآن</div>
       <div id="currentNumber" class="big-num">0</div>
     </div>
 
+    <!-- مربع المتبقي -->
     <div class="cardx text-center">
-      <div class="muted mb-1">المتبقي حتى رقمك</div>
-      <div id="remaining" class="h2 m-0">—</div>
-    </div>
-
-    <div class="cardx">
-      <div class="muted mb-2">إعلانات</div>
-      <ul id="annList"></ul>
+      <div class="title-muted mb-1">المتبقي حتى رقمك</div>
+      <div id="remaining" class="remain-num">—</div>
     </div>
   </div>
 
-  <footer>تصميم مهندس بولس سمير</footer>
+  <!-- شريط الإعلانات المتحرك -->
+  <div class="ticker-wrap">
+    <div id="ticker" class="ticker">
+      <span class="ticker-item">لا توجد إعلانات حالياً</span>
+    </div>
+  </div>
 
-  <!-- Firebase config -->
+  <footer>تصميم مهندس بولس سمير — مدير وحدة تكنولوجيا المعلومات بكلية الطب البيطري جامعة المنيا</footer>
+
+  <!-- Firebase config (يجب أن يعرّف window.db = firebase.database()) -->
   <script src="js/firebase.js"></script>
+
   <script>
-    // قراءة رقمك من الرابط ?my=123
+    // قراءة رقم الطالب من ?my=123
     function getMyNumber(){
       const p = new URLSearchParams(location.search);
       const v = Number(p.get('my'));
       return Number.isFinite(v) ? v : null;
     }
     const my = getMyNumber();
-    document.getElementById('myNum').textContent = my ?? '—';
+    const myEl = document.getElementById('myNum');
+    myEl.textContent = my ?? '—';
 
-    const currentEl = document.getElementById('currentNumber');
+    const currentEl   = document.getElementById('currentNumber');
     const remainingEl = document.getElementById('remaining');
-    const annList = document.getElementById('annList');
+    const tickerEl    = document.getElementById('ticker');
 
     let currentVal = 0;
+    let lastShownCurrent = null;
 
-    // الرقم الجاري
+    // الاستماع للرقم الجاري
     db.ref('queue/currentNumber').on('value', snap => {
       currentVal = Number(snap.val() || 0);
       currentEl.textContent = currentVal;
+
+      // bump أنيميشن خفيف عند التحديث
+      if (lastShownCurrent !== null && lastShownCurrent !== currentVal) {
+        currentEl.classList.remove('bump'); void currentEl.offsetWidth; currentEl.classList.add('bump');
+      }
+      lastShownCurrent = currentVal;
+
+      // المتبقي
       if (my == null) remainingEl.textContent = '—';
       else remainingEl.textContent = Math.max(0, my - currentVal);
     });
 
-    // الإعلانات
+    // الإعلانات (Ticker)
     db.ref('announcements').on('value', snap => {
-      const data = snap.val(); let items = [];
+      const data = snap.val();
+      let items = [];
       if (Array.isArray(data)) items = data.filter(Boolean);
       else if (typeof data === 'string') items = data.split('|').map(s => s.trim()).filter(Boolean);
       else if (data && typeof data === 'object') items = Object.values(data).filter(Boolean);
 
-      annList.innerHTML = '';
-      if (items.length === 0) {
-        const li = document.createElement('li');
-        li.textContent = 'لا توجد إعلانات حالياً';
-        annList.appendChild(li);
-      } else {
-        items.forEach(t => {
-          const li = document.createElement('li');
-          li.textContent = t;
-          annList.appendChild(li);
-        });
-      }
+      if (items.length === 0) items = ['لا توجد إعلانات حالياً'];
+
+      tickerEl.innerHTML = '';
+      items.forEach(t => {
+        const span = document.createElement('span');
+        span.className = 'ticker-item';
+        span.textContent = t;
+        tickerEl.appendChild(span);
+      });
+
+      // ضبط سرعة التمرير حسب طول المحتوى
+      const baseDuration = 28;
+      const factor = Math.max(1, tickerEl.textContent.length / 120);
+      tickerEl.style.animationDuration = (baseDuration * factor) + 's';
     });
   </script>
 </body>
