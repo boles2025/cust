@@ -1,174 +1,159 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <title>نظام خدمة العملاء - كلية الطب البيطري</title>
+  <title>شاشة العرض - كلية الطب البيطري</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" crossorigin="anonymous"></script>
   <style>
-    body {
-      margin: 0;
-      background: linear-gradient(to right, #00695c, #00897b);
-      font-family: "Tajawal", sans-serif;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: 100vh;
-      color: #fff;
-    }
-    header {
-      padding: 20px;
-      text-align: center;
-      animation: fadeInDown 1.2s ease;
-    }
-    header h1 {
-      font-size: 2.5rem;
-      font-weight: bold;
-    }
-    .tv-screen {
-      background: #000;
-      border: 12px solid #333;
-      border-radius: 30px;
-      padding: 30px;
-      width: 80%;
-      max-width: 800px;
-      margin: auto;
-      box-shadow: 0px 0px 40px rgba(0,0,0,0.7);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      animation: zoomIn 1.5s ease;
-    }
-    #currentNumber {
-      font-size: 200px;
-      font-weight: bold;
-      color: #ffeb3b;
-      text-shadow: 0px 0px 25px rgba(255,255,0,0.9);
-      animation: pulse 1.5s infinite;
-    }
-    h3 {
-      margin-bottom: 20px;
-    }
-    #myNumber {
-      font-size: 2rem;
-      margin-top: 20px;
-      color: #ffeb3b;
-      transition: opacity 0.5s ease-in-out;
-    }
-    .btn-get {
-      font-size: 1.8rem;
-      padding: 20px 50px;
-      border-radius: 14px;
-      margin-top: 30px;
-      animation: bounceIn 1.2s ease;
-    }
-    footer {
-      background: rgba(0,0,0,0.4);
-      padding: 15px;
-      text-align: center;
-      font-size: 1rem;
-    }
+    :root{ --neon1:#ffeb3b; --neon2:#00e5ff; --neon3:#ff4081; }
+    @keyframes bg-shift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+    body{ margin:0; min-height:100vh; color:#fff; font-family:"Tajawal",system-ui,Segoe UI,Roboto,Arial,sans-serif;
+      background:linear-gradient(120deg,#003b34,#005a52,#004d40,#00695c); background-size:200% 200%; animation:bg-shift 18s ease-in-out infinite;
+      display:flex; flex-direction:column; gap:14px; }
+    header{text-align:center; padding-top:10px}
+    header h1{font-size:clamp(22px,2.6vw,34px); margin:0; font-weight:800}
+    header h4{font-size:clamp(14px,1.6vw,18px); margin:.2rem 0 0; font-weight:600; opacity:.9}
 
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-      100% { transform: scale(1); }
-    }
-    @keyframes zoomIn {
-      from { transform: scale(0.6); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
-    @keyframes fadeInDown {
-      from { opacity: 0; transform: translateY(-30px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes bounceIn {
-      0% { transform: scale(0.5); opacity: 0; }
-      60% { transform: scale(1.2); opacity: 1; }
-      100% { transform: scale(1); }
-    }
+    .tv-wrap{margin:18px auto 6px; width:min(92vw,1200px)}
+    .tv{position:relative; background:radial-gradient(ellipse at center,#0f2725 0%,#0a1716 60%,#050c0b 100%);
+      border-radius:24px; padding:22px; box-shadow:0 20px 60px rgba(0,0,0,.7), inset 0 0 0 2px rgba(255,255,255,.06), inset 0 0 60px rgba(0,0,0,.6);
+      border:8px solid #0a1413}
+    .tv::after{content:""; position:absolute; inset:8px 8px 60% 8px; background:linear-gradient(120deg,rgba(255,255,255,.06),rgba(255,255,255,0)); border-radius:18px; pointer-events:none}
+    .stand{width:180px; height:10px; background:#0a1413; border-radius:8px; margin:8px auto 0; box-shadow:0 10px 30px rgba(0,0,0,.5); position:relative}
+    .stand::before{content:""; position:absolute; left:50%; transform:translateX(-50%); width:90px; height:12px; background:#0a1413; border-radius:8px; top:-10px}
+
+    .screen{position:relative; border-radius:16px; background:linear-gradient(135deg,rgba(255,255,255,.04),rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.08); padding:clamp(14px,3vw,28px); min-height:46vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; overflow:hidden}
+    .blob{position:absolute; filter:blur(40px); opacity:.18; pointer-events:none; width:40vmax; height:40vmax; border-radius:50%;
+      background:radial-gradient(circle at 30% 30%, var(--neon2), transparent 60%); animation:float 20s ease-in-out infinite}
+    .blob.b2{background:radial-gradient(circle at 70% 70%, var(--neon3), transparent 60%); animation-duration:26s; animation-delay:-4s}
+    @keyframes float{0%,100%{transform:translate(-15%,-10%)}50%{transform:translate(10%,8%)}}
+
+    #labelCurrent{font-size:clamp(16px,1.8vw,22px); opacity:.95}
+    .number{position:relative; font-weight:900; line-height:.9; font-size:clamp(80px,18vw,220px); letter-spacing:-2px; text-align:center;
+      background:conic-gradient(from var(--angle),#fff,var(--neon1),#fff,var(--neon2),#fff,var(--neon3),#fff);
+      -webkit-background-clip:text; background-clip:text; color:transparent; animation:hueRotate 10s linear infinite; --angle:0deg}
+    @keyframes hueRotate{0%{filter:hue-rotate(0deg);--angle:0deg}100%{filter:hue-rotate(360deg);--angle:360deg}}
+    .number-glow{position:absolute; inset:0; z-index:-1; filter:blur(28px); opacity:.65; background:radial-gradient(ellipse at center, rgba(255,235,59,.45), rgba(0,229,255,.28), rgba(255,64,129,.25), transparent 60%); transform:scale(1.05); animation:glowPulse 2.4s ease-in-out infinite}
+    @keyframes glowPulse{0%,100%{opacity:.55; transform:scale(1.03)}50%{opacity:.85; transform:scale(1.08)}}
+    .bump{animation:bump 260ms ease}
+    @keyframes bump{0%{transform:scale(1);opacity:1}30%{transform:scale(1.08);opacity:.92}100%{transform:scale(1);opacity:1}}
+
+    .cta-wrap{display:flex; justify-content:center; margin-top:8px}
+    .cta-btn{display:inline-flex; align-items:center; gap:10px; padding:14px 18px; font-size:clamp(16px,2.2vw,22px); font-weight:800;
+      border-radius:999px; background:linear-gradient(90deg,#ffee58,#ffd54f); color:#143; border:none; box-shadow:0 10px 28px rgba(0,0,0,.25), inset 0 -4px 0 rgba(0,0,0,.12); cursor:pointer; transition: transform .08s ease}
+    .cta-btn:active{transform:scale(.98)}
+
+    .ticket-card{position:relative; margin:12px auto 0; width:min(96vw,900px); display:flex; gap:14px; align-items:center; justify-content:center;
+      background:rgba(0,0,0,.45); border:1px solid rgba(255,255,255,.14); border-radius:18px; padding:12px 14px; backdrop-filter:blur(6px)}
+    .ticket-num{font-size:clamp(46px,8vw,110px); font-weight:900; line-height:.9; background:linear-gradient(45deg,#fff,#ffeb3b,#fff,#00e5ff,#fff); -webkit-background-clip:text; background-clip:text; color:transparent; text-shadow:0 0 20px rgba(0,0,0,.25)}
+    .qr-holder{width:120px; height:120px; background:#fff; border-radius:12px; display:flex; align-items:center; justify-content:center}
+    .ticket-text{font-size:clamp(14px,1.6vw,18px); opacity:.95}
+    .ticket-text b{color:#ffeb3b}
+
+    .ticker-wrap{width:100%; background:rgba(0,0,0,.45); border-top:1px solid rgba(255,255,255,.09); border-bottom:1px solid rgba(255,255,255,.09); overflow:hidden; white-space:nowrap}
+    .ticker{display:inline-block; padding-block:10px; will-change:transform; animation:ticker 28s linear infinite}
+    .ticker:hover{animation-play-state:paused}
+    .ticker-item{display:inline-block; margin-inline:26px; font-size:clamp(14px,1.6vw,18px); color:#ffeb3b; text-shadow:0 0 8px rgba(255,235,59,.35)}
+    @keyframes ticker{from{transform:translateX(100%)}to{transform:translateX(-100%)}}
+
+    footer{text-align:center; padding:6px 10px 14px; font-size:.95rem; color:#e7e7e7; opacity:.9}
   </style>
 </head>
 <body>
+
   <header>
     <h1>كلية الطب البيطري - جامعة المنيا</h1>
     <h4>نظام خدمة العملاء</h4>
   </header>
 
-  <main class="flex-grow-1 d-flex flex-column align-items-center justify-content-center">
-    <div class="tv-screen">
-      <h3>الرقم الحالي</h3>
-      <div id="currentNumber">0</div>
+  <div class="tv-wrap">
+    <div class="tv">
+      <div class="screen">
+        <div class="blob"></div><div class="blob b2"></div>
+        <div id="labelCurrent">الرقم الجاري خدمته الآن</div>
+        <div style="position:relative; display:flex; align-items:center; justify-content:center;">
+          <div aria-hidden="true" class="number-glow"></div>
+          <div id="displayNumber" class="number">0</div>
+        </div>
+      </div>
     </div>
+    <div class="stand"></div>
+  </div>
 
-    <div class="text-center">
-      <button id="getNumber" class="btn btn-warning btn-get">🎟️ احصل على رقمك الآن</button>
-      <div id="myNumber"></div>
+  <div class="cta-wrap">
+    <button id="getTicketBtn" class="cta-btn">🎟️ احصل على رقمك الآن</button>
+  </div>
+
+  <div id="ticketCard" class="ticket-card" style="display:none;">
+    <div class="qr-holder"><div id="ticketQR"></div></div>
+    <div class="ticket-text">
+      <div>رقمك في الدور:</div>
+      <div id="ticketNumber" class="ticket-num">—</div>
+      <div class="mt-1"><small>امسح <b>QR</b> للانتقال إلى شاشة التتبُّع على موبايلك</small></div>
     </div>
-  </main>
+  </div>
 
-  <footer>
-    تصميم: مهندس بولس سمير
-  </footer>
+  <div class="ticker-wrap">
+    <div id="ticker" class="ticker">
+      <span class="ticker-item">لا توجد إعلانات حالياً</span>
+    </div>
+  </div>
 
-  <!-- صوت الجرس -->
-  <audio id="bellSound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
+  <footer>تصميم: مهندس بولس سمير</footer>
 
+  <script src="js/firebase.js"></script>
   <script>
-    // === Firebase Config ===
-    const firebaseConfig = {
-      apiKey: "AIzaSyBajCZMATK21mgaEFcccyhLne4pgdaxMfk",
-      authDomain: "dent-35a17.firebaseapp.com",
-      databaseURL: "https://dent-35a17-default-rtdb.firebaseio.com",
-      projectId: "dent-35a17",
-      storageBucket: "dent-35a17.firebasestorage.app",
-      messagingSenderId: "416163754700",
-      appId: "1:416163754700:web:dec496619e3e6fff3e0869"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    const displayEl = document.getElementById('displayNumber');
+    const tickerEl  = document.getElementById('ticker');
+    const getBtn    = document.getElementById('getTicketBtn');
+    const ticketCard= document.getElementById('ticketCard');
+    const ticketNumEl = document.getElementById('ticketNumber');
 
-    const currentEl = document.getElementById("currentNumber");
-    const btn = document.getElementById("getNumber");
-    const myNum = document.getElementById("myNumber");
-    const bellSound = document.getElementById("bellSound");
+    let lastNumber = null;
 
-    // تحديث الرقم الحالي
-    db.ref("queue/currentNumber").on("value", snap => {
-      currentEl.innerText = snap.val() || 0;
+    // رابط GitHub Pages الثابت
+    const TRACK_BASE = 'https://boles2025.github.io/cust/track.html';
+
+    function animateNumber(){ displayEl.classList.remove('bump'); void displayEl.offsetWidth; displayEl.classList.add('bump'); }
+
+    // الرقم الجاري
+    db.ref('queue/currentNumber').on('value', snap => {
+      const val = snap.val() ?? 0;
+      if (val !== lastNumber) { displayEl.textContent = val; animateNumber(); lastNumber = val; }
     });
 
-    // الحصول على رقم جديد
-    btn.addEventListener("click", () => {
-      db.ref("queue/lastNumber").transaction(current => (current || 0) + 1,
-        (error, committed, snapshot) => {
-          if (committed) {
-            const number = snapshot.val();
-            myNum.innerText = "✅ رقمك: " + number;
-            myNum.style.opacity = 1;
+    // الإعلانات
+    db.ref('announcements').on('value', snap => {
+      const data = snap.val(); let items = [];
+      if (Array.isArray(data)) items = data.filter(Boolean);
+      else if (typeof data === 'string') items = data.split('|').map(s => s.trim()).filter(Boolean);
+      else if (data && typeof data === 'object') items = Object.values(data).filter(Boolean);
+      if (items.length === 0) items = ['لا توجد إعلانات حالياً'];
+      tickerEl.innerHTML = ''; items.forEach(txt => {
+        const span = document.createElement('span'); span.className = 'ticker-item'; span.textContent = txt; tickerEl.appendChild(span);
+      });
+      const baseDuration = 28; const factor = Math.max(1, tickerEl.textContent.length / 120);
+      tickerEl.style.animationDuration = (baseDuration * factor) + 's';
+    });
 
-            // تشغيل جرس
-            bellSound.currentTime = 0;
-            bellSound.play();
+    // إصدار رقم جديد + QR
+    const issuedRef = db.ref('queue/lastIssuedNumber');
+    getBtn.addEventListener('click', async () => {
+      try {
+        const newMyNumber = await issuedRef.transaction(curr => (Number(curr)||0) + 1)
+          .then(res => { if (!res.committed) throw new Error('لم يتم الإصدار'); return Number(res.snapshot.val() || 0); });
 
-            // رسالة صوتية
-            const msg = new SpeechSynthesisUtterance("العميل رقم " + number + " التوجه لشئون الطلاب لتسليم الملف");
-            msg.lang = "ar-SA"; // عربي
-            speechSynthesis.speak(msg);
-
-            // إخفاء بعد 10 ثواني
-            setTimeout(() => {
-              myNum.style.opacity = 0;
-              setTimeout(() => {
-                myNum.innerText = "";
-              }, 500);
-            }, 10000);
-          }
-        }
-      );
+        ticketCard.style.display = '';
+        ticketNumEl.textContent = newMyNumber;
+        const trackUrl = TRACK_BASE + '?my=' + encodeURIComponent(newMyNumber);
+        document.getElementById('ticketQR').innerHTML = '';
+        new QRCode(document.getElementById('ticketQR'), { text: trackUrl, width: 112, height: 112, correctLevel: QRCode.CorrectLevel.M });
+      } catch(e){ alert('تعذّر إصدار رقمك الآن. حاول مرة أخرى.'); }
     });
   </script>
 </body>
